@@ -3,12 +3,17 @@ import React from 'react';
 const GlassCard = ({ children, className = "", onClick, hoverEffect = false }) => (
   <div 
     onClick={onClick}
+    style={{
+        backgroundColor: 'var(--glass-bg)',
+        borderColor: 'var(--glass-border)',
+        color: 'var(--glass-text)'
+    }}
     className={`
       relative overflow-hidden
-      bg-white/10 backdrop-blur-md border border-white/10 
-      rounded-3xl shadow-2xl shadow-black/20
+      backdrop-blur-md border 
+      rounded-3xl shadow-xl
       transition-all duration-500 ease-out
-      ${hoverEffect ? 'hover:bg-white/15 hover:scale-[1.02] hover:shadow-cyan-500/20 hover:border-white/20 cursor-pointer group' : ''}
+      ${hoverEffect ? 'hover:scale-[1.02] cursor-pointer group' : ''}
       ${className}
     `}
   >
