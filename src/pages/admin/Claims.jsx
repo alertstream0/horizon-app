@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { query, collection, orderBy, onSnapshot } from 'firebase/firestore';
 import { MoreHorizontal, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { db, appId } from '../../services/firebase';
@@ -7,6 +8,7 @@ import { useApp } from '../../context/AppContext';
 
 const Claims = () => {
     const { user } = useApp();
+    const navigate = useNavigate();
     const [claims, setClaims] = useState([]);
     
     useEffect(() => {
@@ -36,13 +38,18 @@ const Claims = () => {
                     </thead>
                     <tbody className="divide-y divide-white/5">
                         {claims.map((claim) => (
-                            <tr key={claim.id} className="hover:bg-white/5 transition-colors group">
+                            <tr 
+                                key={claim.id} 
+                                onClick={() => navigate(`/admin/claims/${claim.id}`)}
+                                className="hover:bg-white/5 transition-colors group cursor-pointer"
+                            >
                                 <td className="p-4 font-mono text-cyan-400">{claim.refId}</td>
                                 <td className="p-4 capitalize">{claim.type}</td>
                                 <td className="p-4">{claim.location}</td>
                                 <td className="p-4">
                                    <select 
                                       value={claim.priority}
+                                      onClick={(e) => e.stopPropagation()}
                                       onChange={(e) => updateTicketPriority(claim.id, e.target.value)}
                                       className={`bg-transparent border-none outline-none cursor-pointer uppercase font-bold text-[10px] tracking-wider ${claim.priority === 'high' ? 'text-red-400' : 'text-blue-400'}`}
                                    >
@@ -54,6 +61,7 @@ const Claims = () => {
                                 <td className="p-4">
                                      <select 
                                       value={claim.status}
+                                      onClick={(e) => e.stopPropagation()}
                                       onChange={(e) => updateTicketStatus(claim.id, e.target.value)}
                                       className={`bg-transparent border-none outline-none cursor-pointer uppercase font-bold text-[10px] tracking-wider ${claim.status === 'new' ? 'text-cyan-400' : claim.status === 'resolved' ? 'text-green-400' : 'text-yellow-400'}`}
                                    >

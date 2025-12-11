@@ -13,6 +13,7 @@ import Tracking from './pages/Tracking';
 import AdminLogin from './pages/admin/Login';
 import AdminDashboard from './pages/admin/Dashboard';
 import AdminClaims from './pages/admin/Claims';
+import AdminClaimDetail from './pages/admin/ClaimDetail';
 import Auth from './pages/auth/Auth';
 import Profile from './pages/Profile';
 
@@ -39,6 +40,7 @@ function App() {
             <Route path="/admin" element={<AdminLayout />}>
                 <Route path="dashboard" element={<AdminDashboard />} />
                 <Route path="claims" element={<AdminClaims />} />
+                <Route path="claims/:id" element={<AdminClaimDetail />} />
                 <Route path="baggage" element={<AdminClaims />} /> {/* Reuse Claims for now */}
             </Route>
           </Routes>

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signOut, signInAnonymously } from 'firebase/auth';
 import { auth } from '../services/firebase';
 import { translations } from '../utils/translations';
 
@@ -10,7 +10,14 @@ export const AppProvider = ({ children }) => {
   const [lang, setLang] = useState('fr'); // Default to FR per request
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, setUser);
+    const unsub = onAuthStateChanged(auth, (u) => {
+        if (u) {
+            setUser(u);
+        } else {
+            // Auto-sign in anonymously for passengers
+            signInAnonymously(auth).catch(e => console.error("Anon Auth Failed:", e));
+        }
+    });
     return () => unsub();
   }, []);
 

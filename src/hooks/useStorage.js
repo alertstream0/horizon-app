@@ -21,7 +21,10 @@ const useStorage = () => {
                 return;
             }
 
-            const storageRef = ref(storage, path);
+            // Sanitize filename to avoid path issues
+            const sanitizedName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+            const finalPath = `${path}/${Date.now()}_${sanitizedName}`;
+            const storageRef = ref(storage, finalPath);
             const uploadTask = uploadBytesResumable(storageRef, file);
 
             uploadTask.on('state_changed',

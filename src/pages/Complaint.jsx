@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft, Sparkles, Smile, AlertTriangle, Shield, User, Briefcase, MapPin, Camera, Mic, Loader2, Upload } from 'lucide-react';
+import { ArrowLeft, Sparkles, Smile, AlertTriangle, Shield, User, Briefcase, MapPin, Camera, Mic, Loader2, Upload, Plane } from 'lucide-react';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db, appId } from '../services/firebase';
 import { useApp } from '../context/AppContext';
@@ -18,42 +18,66 @@ const CATEGORIES = [
   { id: 'shops', icon: <Briefcase className="w-6 h-6" />, label: { en: "Shops", fr: "Commerces", ar: "متاجر" }, color: "from-cyan-400 to-blue-500" },
 ];
 
+import { X } from 'lucide-react';
+import useAudioRecorder from '../hooks/useAudioRecorder';
+
 const Complaint = () => {
   const { t, user, lang } = useApp();
   const navigate = useNavigate();
-  // eslint-disable-next-line no-unused-vars
   const locationState = useLocation().state || {};
   
   const [step, setStep] = useState(1);
-  const [data, setData] = useState({ category: '', location: '', desc: '', files: [] });
+  const [data, setData] = useState({ category: '', location: '', desc: '', files: [], flightNumber: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { uploadFile, progress: uploadProgress, isUploading } = useStorage();
+  const { isRecording, startRecording, stopRecording, audioBlob, audioUrl, resetAudio } = useAudioRecorder();
 
   const handleFileSelect = async (e) => {
     const file = e.target.files[0];
     if (file) {
       try {
-        const url = await uploadFile(file, `complaints/${Date.now()}_${file.name}`);
+        // Pass prefix only, hook now handles filename construction with sanitization
+        const url = await uploadFile(file, 'complaints');
         setData(prev => ({ ...prev, files: [...prev.files, url] }));
       } catch (err) {
         console.error("Upload failed", err);
+        alert(`Upload failed: ${err.message || err}`);
       }
     }
   };
 
   const handleSubmit = async () => {
-    if (!user) return; // Should handle auth prompt if needed
+    // 1. Validation
+    if (!data.location || !data.desc) {
+        alert(t.desc_placeholder); // Using placeholder as error for now, or "Please fill all fields"
+        return;
+    }
+
+    if (!user) {
+        alert("Connecting to server... Please try again in 2 seconds.");
+        return; 
+    }
+
     setIsSubmitting(true);
     try {
+      let finalFiles = [...data.files];
+      
+      // Upload Audio if exists
+      if (audioBlob) {
+          const audioUrlStorage = await uploadFile(audioBlob, `audio/${Date.now()}.webm`);
+          finalFiles.push(audioUrlStorage);
+      }
+
       const refId = `CMP-${Math.floor(100000 + Math.random() * 900000)}`;
       await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'complaints'), {
-        refId, type: 'complaint', ...data, status: 'new', priority: 'medium',
+        refId, type: 'complaint', ...data, files: finalFiles, status: 'new', priority: 'medium',
         createdAt: serverTimestamp(), lang, userId: user.uid
       });
-      setTimeout(() => navigate('/success', { state: { refId, type: 'complaint' } }), 1000); // Fake delay for smooth feel
+      setTimeout(() => navigate('/success', { state: { refId, type: 'complaint' } }), 1000); 
     } catch (e) { 
       console.error("Error submitting complaint:", e);
+      alert(`Error: ${e.message}`);
       setIsSubmitting(false); 
     }
   };
@@ -100,6 +124,19 @@ const Complaint = () => {
             <h2 className="text-2xl font-bold text-white">{t.desc_label}</h2>
             
             <div className="space-y-2">
+              <label className="text-xs font-bold text-cyan-400 uppercase tracking-widest ml-1">{t.flight_num}</label>
+              <div className="relative group">
+                <Plane className="absolute top-4 left-4 text-white/50 group-focus-within:text-cyan-400 transition-colors" size={20} />
+                <GlassInput 
+                  placeholder={t.flight_placeholder}
+                  value={data.flightNumber}
+                  onChange={(e) => setData({...data, flightNumber: e.target.value})}
+                  className="pl-12"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
               <label className="text-xs font-bold text-cyan-400 uppercase tracking-widest ml-1">{t.location}</label>
               <div className="relative group">
                 <MapPin className="absolute top-4 left-4 text-white/50 group-focus-within:text-cyan-400 transition-colors" size={20} />
@@ -126,16 +163,33 @@ const Complaint = () => {
             <div className="flex gap-4">
                <button 
                   onClick={() => document.getElementById('file-upload').click()}
-                  className="flex-1 py-4 border border-dashed border-white/20 rounded-xl flex flex-col items-center justify-center text-white/50 hover:bg-white/5 hover:text-white hover:border-cyan-400/50 transition-all"
+                  disabled={!user || isUploading}
+                  className={`flex-1 py-4 border border-dashed rounded-xl flex flex-col items-center justify-center transition-all ${!user ? 'opacity-50 cursor-not-allowed border-white/10' : 'border-white/20 hover:bg-white/5 hover:text-white hover:border-cyan-400/50'}`}
                >
                   {isUploading ? <Loader2 className="animate-spin mb-2" /> : <Camera size={24} className="mb-2" />}
-                  <span className="text-xs font-bold">Photo</span>
+                  <span className="text-xs font-bold">{!user ? "Connecting..." : "Photo"}</span>
                </button>
-               <button className="flex-1 py-4 border border-dashed border-white/20 rounded-xl flex flex-col items-center justify-center text-white/50 hover:bg-white/5 hover:text-white hover:border-cyan-400/50 transition-all">
-                  <Mic size={24} className="mb-2" />
-                  <span className="text-xs font-bold">Audio</span>
+               
+               <button 
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className={`flex-1 py-4 border border-dashed rounded-xl flex flex-col items-center justify-center transition-all ${
+                      isRecording 
+                        ? 'border-red-500 bg-red-500/10 text-red-500 animate-pulse' 
+                        : 'border-white/20 text-white/50 hover:bg-white/5 hover:text-white hover:border-cyan-400/50'
+                  }`}
+               >
+                  {isRecording ? <div className="w-6 h-6 rounded bg-red-500 mb-2" /> : <Mic size={24} className="mb-2" />}
+                  <span className="text-xs font-bold">{isRecording ? "Stop Recording" : "Record Audio"}</span>
                </button>
             </div>
+
+            {/* Audio Preview */}
+            {audioUrl && (
+                <div className="flex items-center gap-2 p-3 bg-white/5 rounded-xl border border-white/10">
+                    <audio src={audioUrl} controls className="w-full h-8" />
+                    <button onClick={resetAudio} className="p-2 text-white/50 hover:text-red-400"><X size={16} /></button>
+                </div>
+            )}
 
             {data.files.length > 0 && (
               <div className="flex flex-wrap gap-2">
@@ -147,11 +201,42 @@ const Complaint = () => {
               </div>
             )}
             
-            {uploadProgress > 0 && uploadProgress < 100 && (
+            {(uploadProgress > 0 && uploadProgress < 100) || isUploading ? (
                  <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
-                    <div className="bg-cyan-400 h-full transition-all" style={{width: `${uploadProgress}%`}}></div>
+                    <div className="bg-cyan-400 h-full transition-all" style={{width: `${uploadProgress || 100}%`}}></div>
                  </div>
-            )}
+            ) : null}
+
+            {/* Contact Info Section */}
+            <div className="space-y-4 pt-4 border-t border-white/10">
+                <h3 className="text-sm font-bold text-white/70 uppercase tracking-widest">Restons en contact</h3>
+                <GlassInput 
+                    placeholder="Votre Nom (Optionnel)"
+                    value={data.name || ''}
+                    onChange={(e) => setData({...data, name: e.target.value})}
+                />
+                <div className="flex gap-2">
+                     <button 
+                        onClick={() => setData({...data, contactMethod: 'email'})}
+                        className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${data.contactMethod === 'email' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'border-white/10 text-white/40 hover:bg-white/5'}`}
+                     >
+                        Email
+                     </button>
+                     <button 
+                         onClick={() => setData({...data, contactMethod: 'phone'})}
+                         className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${data.contactMethod === 'phone' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-400' : 'border-white/10 text-white/40 hover:bg-white/5'}`}
+                     >
+                        Téléphone
+                     </button>
+                </div>
+                {data.contactMethod && (
+                    <GlassInput 
+                        placeholder={data.contactMethod === 'email' ? "ex: voyageur@mail.com" : "ex: +228 90 00 00 00"}
+                        value={data.contactValue || ''}
+                        onChange={(e) => setData({...data, contactValue: e.target.value})}
+                    />
+                )}
+            </div>
             
             <input 
                 type="file" 
@@ -163,7 +248,7 @@ const Complaint = () => {
 
             <NeonButton 
               onClick={handleSubmit}
-              disabled={!data.location || !data.desc || isSubmitting}
+              disabled={isSubmitting} // Only disable during submission, validation happens inside
             >
               {isSubmitting ? <Loader2 className="animate-spin" /> : t.submit}
             </NeonButton>

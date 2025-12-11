@@ -23,11 +23,14 @@ const Profile = () => {
             try {
                 const q = query(
                     collection(db, 'artifacts', appId, 'public', 'data', 'complaints'),
-                    where('userId', '==', user.uid),
-                    orderBy('createdAt', 'desc')
+                    where('userId', '==', user.uid)
+                    // orderBy('createdAt', 'desc') // Removed to avoid missing index error
                 );
                 const snapshot = await getDocs(q);
-                setHistory(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                const results = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                // Sort in memory
+                results.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                setHistory(results);
             } catch (error) {
                 console.error("Error fetching history:", error);
             } finally {

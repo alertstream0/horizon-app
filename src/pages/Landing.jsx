@@ -11,10 +11,13 @@ const Landing = () => {
   return (
     <div className="w-full max-w-lg mx-auto flex flex-col gap-6 animate-fade-in-up">
       <div className="text-center mb-6">
-        <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-100 to-white mb-2 drop-shadow-sm">
+        <div className="inline-block px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-md mb-4">
+            <span className="text-[10px] font-bold text-yellow-400 tracking-[0.2em] uppercase">LFW • LOMÉ-TOKOIN</span>
+        </div>
+        <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-200 via-white to-green-200 mb-2 drop-shadow-sm leading-tight">
           {t.welcome}
         </h1>
-        <p className="text-lg text-cyan-200/80 font-light tracking-wide">{t.subtitle}</p>
+        <p className="text-lg text-white/60 font-light tracking-wide max-w-sm mx-auto">{t.subtitle}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-5">
