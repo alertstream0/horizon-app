@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Admin check (mocked for now or via custom claims)
+    // For this demo, we'll assume any auth user can write, but in prod we'd check claims
+    function isAdmin() {
+       return isAuthenticated() && request.auth.token.email.matches('.*@horizon.admin');
+    }
+
+    match /artifacts/{appId}/public/data/complaints/{document} {
+      allow create: if isAuthenticated();
+      allow read: if isOwner(resource.data.userId) || isAdmin();
+      allow update: if isAdmin(); // Only admins can change status
+    }
+  }
+}
