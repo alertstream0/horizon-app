@@ -3,6 +3,7 @@ import { collection, query, where, getDocs, orderBy, limit } from 'firebase/fire
 import { AlertTriangle, TrendingUp, CheckCircle, Activity } from 'lucide-react';
 import { db, appId } from '../../services/firebase';
 import GlassCard from '../../components/ui/GlassCard';
+import { useApp } from '../../context/AppContext';
 
 const MetricCard = ({ title, value, trend, color, border, icon: Icon }) => (
     <div className={`p-6 rounded-xl border backdrop-blur-sm relative overflow-hidden group transition-colors duration-300`} 
@@ -31,6 +32,7 @@ const ProgressBar = ({ label, pct, color }) => (
 );
 
 const Dashboard = () => {
+  const { t } = useApp();
   const [stats, setStats] = useState({
     activeComplaints: 0,
     baggageClaims: 0,

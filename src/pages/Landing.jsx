@@ -54,7 +54,7 @@ const Landing = () => {
               </div>
               <div>
                 <h3 className="font-bold text-xl text-white group-hover:text-orange-200 transition-colors">{t.btn_baggage}</h3>
-                <p className="text-sm text-orange-200/60">Lost, Delayed, Damaged</p>
+                <p className="text-sm text-orange-200/60">{t.baggage_sub}</p>
               </div>
             </div>
             <div className="w-10 h-10 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-orange-600 transition-all">

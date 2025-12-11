@@ -46,8 +46,8 @@ const AdminLayout = () => {
       {/* Sidebar */}
       <aside className="w-72 bg-[var(--glass-bg)] backdrop-blur-xl border-r border-[var(--glass-border)] flex flex-col relative z-20 transition-colors duration-300">
         <div className="p-8">
-            <h2 className="font-bold text-2xl tracking-widest" style={{ color: 'var(--glass-text)' }}>NEXUS</h2>
-            <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'var(--accent-color)' }}>Operational Grid</p>
+            <h2 className="font-bold text-2xl tracking-widest" style={{ color: 'var(--glass-text)' }}>{t.nexus_title}</h2>
+            <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'var(--accent-color)' }}>{t.op_grid}</p>
         </div>
         <nav className="flex-1 px-4 space-y-2">
             <NavItem icon={<BarChart3 size={18}/>} label={t.dashboard} target="/admin/dashboard" active={currentPath === '/admin/dashboard'} />
@@ -57,10 +57,10 @@ const AdminLayout = () => {
         <div className="p-4 border-t border-[var(--glass-border)]">
             <div className="flex items-center gap-3 px-4 py-2 bg-[var(--glass-border)] rounded-lg mb-2">
                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="text-xs font-bold" style={{ color: '#22c55e' }}>System Online</span>
+                <span className="text-xs font-bold" style={{ color: '#22c55e' }}>{t.sys_online}</span>
             </div>
             <button onClick={() => navigate('/')} className="flex items-center gap-2 text-xs text-red-400 hover:text-red-300 px-4 py-2 w-full transition-colors">
-                <LogOut size={14} /> Terminate
+                <LogOut size={14} /> {t.terminate}
             </button>
         </div>
       </aside>
@@ -73,7 +73,7 @@ const AdminLayout = () => {
         <header className="h-20 border-b border-[var(--glass-border)] flex items-center justify-between px-8 bg-[var(--glass-bg)] backdrop-blur-sm transition-colors duration-300">
              <div className="flex items-center gap-4">
                 <Search className="opacity-30" size={18}/>
-                <input placeholder="SEARCH DATABASE..." className="bg-transparent text-sm placeholder-opacity-30 outline-none w-64 font-mono uppercase" style={{ color: 'var(--text-main)', placeholderColor: 'var(--glass-text-muted)' }} />
+                <input placeholder={t.search_db} className="bg-transparent text-sm placeholder-opacity-30 outline-none w-64 font-mono uppercase" style={{ color: 'var(--text-main)', placeholderColor: 'var(--glass-text-muted)' }} />
              </div>
              <div className="flex items-center gap-6">
                  <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-[var(--glass-border)] transition-colors" title="Toggle Theme">

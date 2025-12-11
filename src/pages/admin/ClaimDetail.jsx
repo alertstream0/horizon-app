@@ -17,7 +17,7 @@ const ClaimDetail = () => {
     const [reply, setReply] = useState('');
     const [showNotify, setShowNotify] = useState(false);
     const [error, setError] = useState(null);
-    const { user } = useApp();
+    const { user, t } = useApp();
 
     useEffect(() => {
         const fetchClaim = async () => {
@@ -91,7 +91,7 @@ const ClaimDetail = () => {
     if (!claim) return <div className="p-10 text-white">Signal lost.</div>;
 
     const statusLabel = claim.status?.replace('_', ' ') || 'Unknown';
-    const dateStr = claim.createdAt?.seconds ? new Date(claim.createdAt.seconds * 1000).toLocaleString() : 'Just now';
+    const dateStr = claim.createdAt?.seconds ? new Date(claim.createdAt.seconds * 1000).toLocaleString() : t.just_now;
 
     return (
         <div className="h-[calc(100vh-100px)] flex flex-col animate-fade-in">
@@ -103,17 +103,17 @@ const ClaimDetail = () => {
                     </button>
                     <div>
                         <div className="flex items-center gap-3">
-                            <h1 className="text-2xl font-bold tracking-wide" style={{ color: 'var(--glass-text)' }}>CASE #{claim.refId || '???'}</h1>
+                            <h1 className="text-2xl font-bold tracking-wide" style={{ color: 'var(--glass-text)' }}>{t.case_num}{claim.refId || '???'}</h1>
                             <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--accent-color)', borderColor: 'var(--accent-color)', borderWidth: '1px' }}>
                                 {statusLabel}
                             </span>
                         </div>
-                        <p className="text-xs font-mono mt-1" style={{ color: 'var(--glass-text-muted)' }}>OPENED {dateStr}</p>
+                        <p className="text-xs font-mono mt-1" style={{ color: 'var(--glass-text-muted)' }}>{t.opened} {dateStr}</p>
                     </div>
                 </div>
                 <div className="flex gap-3">
                      <NeonButton onClick={() => handleAction('resolved')} className="!py-2 !px-6 !text-xs">
-                        Resolve Case
+                        {t.resolve_case}
                     </NeonButton>
                 </div>
             </div>
@@ -152,12 +152,18 @@ const ClaimDetail = () => {
                         </div>
                     </GlassCard>
 
-                    <div className="grid grid-cols-2 gap-4">
-                         {claim.files && claim.files.length > 0 ? claim.files.map((f, i) => (
-                             <div key={i} className="relative group rounded-xl overflow-hidden border border-white/10 aspect-video bg-black/40">
-                                <img src={f} className="w-full h-full object-cover" alt="Evidence" />
-                            </div>
-                        )) : <div className="col-span-2 text-white/20 text-center py-10">No Evidence Uploaded</div>}
+                    {/* Evidence Grid */}
+                    <div>
+                        <h3 className="text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2" style={{ color: 'var(--glass-text-muted)' }}>
+                            <Tag size={14}/> {t.evidence_locker}
+                        </h3>
+                        <div className="grid grid-cols-2 gap-2">
+                            {claim.files && claim.files.length > 0 ? claim.files.map((f, i) => (
+                                <div key={i} className="relative group rounded-xl overflow-hidden border border-white/10 aspect-video bg-black/40">
+                                    <img src={f} className="w-full h-full object-cover" alt="Evidence" />
+                                </div>
+                            )) : <div className="col-span-2 text-center py-10" style={{ color: 'var(--glass-text-muted)' }}>{t.no_evidence}</div>}
+                        </div>
                     </div>
                 </div>
 
@@ -167,20 +173,20 @@ const ClaimDetail = () => {
                                style={{ borderColor: 'var(--color-purple)' }}>
                         <div className="flex items-center gap-2 mb-4">
                             <Sparkles size={16} style={{ color: 'var(--color-purple)' }} />
-                            <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--color-purple)' }}>AI Analysis</h3>
+                            <h3 className="text-xs font-bold uppercase tracking-widest" style={{ color: 'var(--color-purple)' }}>{t.ai_analysis}</h3>
                         </div>
                         {aiAnalysis ? (
                             <div className="space-y-4">
                                 <p className="text-sm" style={{ color: 'var(--glass-text)' }}>{aiAnalysis.summary}</p> 
                                 <span className="text-xs" style={{ color: 'var(--color-purple)' }}>Sentiment: {aiAnalysis.sentiment}</span>
                             </div>
-                        ) : <div className="text-xs" style={{ color: 'var(--glass-text-muted)' }}>Analysis pending...</div>}
+                        ) : <div className="text-xs" style={{ color: 'var(--glass-text-muted)' }}>{t.analysis_pending}</div>}
                     </GlassCard>
 
                     <GlassCard className="flex-1 flex flex-col p-5">
                          <div className="flex items-center justify-between mb-4">
                             <h3 className="text-xs font-bold uppercase tracking-widest flex items-center gap-2" style={{ color: 'var(--glass-text-muted)' }}>
-                                <Send size={12} /> Smart Reply
+                                <Send size={12} /> {t.smart_reply}
                             </h3>
                         </div>
                         <textarea 
@@ -194,7 +200,7 @@ const ClaimDetail = () => {
                             onChange={(e) => setReply(e.target.value)}
                         />
                         <NeonButton onClick={() => handleAction('resolved')} className="mt-4 !py-2 !text-xs">
-                                Send & Resolve
+                                {t.send_update}
                         </NeonButton>
                     </GlassCard>
                 </div>
